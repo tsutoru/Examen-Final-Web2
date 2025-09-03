@@ -5,8 +5,8 @@ import pool from '../config/database.js';
 import initDatabase from '../database/init.js';
 
 // Import des routes
-import authRoutes from '../routes/authRoutes';
-import transactionRoutes from '../routes/transactionRoutes';
+import authRoutes from '../routes/authRoutes.js';
+import transactionRoutes from '../routes/transactionRoutes.js';
 import accountRoutes from './routes/accountRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import savingsRoutes from './routes/savingsRoutes';
@@ -16,7 +16,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+
 app.use(cors()); // Autorise les requêtes cross-origin
 app.use(express.json()); // Parse les corps de requêtes en JSON
 
@@ -37,17 +37,17 @@ const startServer = async () => {
   try {
     // Tester la connexion à la base de données
     await pool.query('SELECT NOW()');
-    console.log('✅ Connexion à PostgreSQL réussie');
+    console.log(' Connexion à PostgreSQL réussie');
     
     // Initialiser la base de données
     await initDatabase();
     
     // Démarrer le serveur
     app.listen(PORT, () => {
-      console.log(`🚀 Serveur démarré sur le port ${PORT}`);
+      console.log(` Serveur démarré sur le port ${PORT}`);
     });
   } catch (error) {
-    console.error('❌ Erreur lors du démarrage du serveur:', error);
+    console.error(' Erreur lors du démarrage du serveur:', error);
     process.exit(1); // Quitter le processus en cas d'erreur
   }
 };

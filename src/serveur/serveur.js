@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import pool from '../config/database.ts';
-import initDatabase from '../database/init.ts';
+import pool from '../config/database.js';
+import initDatabase from '../database/init.js';
 
 // Import des routes
 import authRoutes from '../routes/authRoutes';

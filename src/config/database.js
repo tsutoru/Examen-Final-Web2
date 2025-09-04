@@ -25,4 +25,4 @@ pool.on('error', (err) => {
   console.error('Erreur de connexion à la base de données:', err);
 });
 
-export default pool;
+export default pool;q

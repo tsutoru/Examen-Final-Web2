@@ -1,8 +1,7 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
-import { TransactionModel } from '../models/Transaction';
+const TransactionModel = require('../models/Transaction');
 
-export const getTransactions = async (req: AuthRequest, res: Response): Promise<void> => {
+
+const getTransactions = async (req, res) => {
   try {
     const userId = req.user.id;
     const transactions = await TransactionModel.findByUserId(userId);
@@ -13,12 +12,12 @@ export const getTransactions = async (req: AuthRequest, res: Response): Promise<
   }
 };
 
-export const createTransaction = async (req: AuthRequest, res: Response): Promise<void> => {
+const createTransaction = async (req, res) => {
   try {
     const userId = req.user.id;
     const { account_id, category_id, amount, type, description, date } = req.body;
 
-    // Validation
+
     if (!account_id || !amount || !type || !date) {
       res.status(400).json({ message: 'Champs requis manquants' });
       return;
@@ -46,7 +45,7 @@ export const createTransaction = async (req: AuthRequest, res: Response): Promis
   }
 };
 
-export const getTransaction = async (req: AuthRequest, res: Response): Promise<void> => {
+const getTransaction = async (req, res) => {
   try {
     const userId = req.user.id;
     const transactionId = parseInt(req.params.id);
@@ -64,7 +63,7 @@ export const getTransaction = async (req: AuthRequest, res: Response): Promise<v
   }
 };
 
-export const updateTransaction = async (req: AuthRequest, res: Response): Promise<void> => {
+const updateTransaction = async (req, res) => {
   try {
     const userId = req.user.id;
     const transactionId = parseInt(req.params.id);
@@ -83,7 +82,7 @@ export const updateTransaction = async (req: AuthRequest, res: Response): Promis
   }
 };
 
-export const deleteTransaction = async (req: AuthRequest, res: Response): Promise<void> => {
+const deleteTransaction = async (req, res) => {
   try {
     const userId = req.user.id;
     const transactionId = parseInt(req.params.id);
@@ -101,7 +100,7 @@ export const deleteTransaction = async (req: AuthRequest, res: Response): Promis
   }
 };
 
-export const getBalance = async (req: AuthRequest, res: Response): Promise<void> => {
+const getBalance = async (req, res) => {
   try {
     const userId = req.user.id;
     const balance = await TransactionModel.getBalance(userId);
@@ -110,4 +109,13 @@ export const getBalance = async (req: AuthRequest, res: Response): Promise<void>
     console.error('Erreur lors du calcul du solde:', error);
     res.status(500).json({ message: 'Erreur serveur' });
   }
+};
+
+module.exports = {
+  getTransactions,
+  createTransaction,
+  getTransaction,
+  updateTransaction,
+  deleteTransaction,
+  getBalance,
 };

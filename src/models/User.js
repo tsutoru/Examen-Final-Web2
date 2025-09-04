@@ -1,45 +1,39 @@
-import pool from '../config/database';
-import bcrypt from 'bcryptjs';
+const pool = require('../config/database'); // Assure-toi que ce fichier existe
+const bcrypt = require('bcryptjs'); // npm install bcryptjs
 
-export interface User {
-  id?: number;
-  email: string;
-  password: string;
-  name: string;
-  created_at?: Date;
-}
-
-export class UserModel {
+class UserModel {
   // Créer un nouvel utilisateur
-  static async create(user: Omit<User, 'id'>): Promise<User> {
+  static async create(user) {
     const hashedPassword = await bcrypt.hash(user.password, 10);
     const result = await pool.query(
-      'INSERT INTO users (email, password, name) VALUES ($1, $2, $3) RETURNING id, email, name, created_at',
-      [user.email, hashedPassword, user.name]
+        'INSERT INTO users (email, password, name) VALUES ($1, $2, $3) RETURNING id, email, name, created_at',
+        [user.email, hashedPassword, user.name]
     );
     return result.rows[0];
   }
 
   // Trouver un utilisateur par email
-  static async findByEmail(email: string): Promise<User | null> {
+  static async findByEmail(email) {
     const result = await pool.query(
-      'SELECT * FROM users WHERE email = $1',
-      [email]
+        'SELECT * FROM users WHERE email = $1',
+        [email]
     );
     return result.rows.length ? result.rows[0] : null;
   }
 
   // Trouver un utilisateur par ID
-  static async findById(id: number): Promise<User | null> {
+  static async findById(id) {
     const result = await pool.query(
-      'SELECT id, email, name, created_at FROM users WHERE id = $1',
-      [id]
+        'SELECT id, email, name, created_at FROM users WHERE id = $1',
+        [id]
     );
     return result.rows.length ? result.rows[0] : null;
   }
 
   // Vérifier le mot de passe
-  static async verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+  static async verifyPassword(plainPassword, hashedPassword) {
     return await bcrypt.compare(plainPassword, hashedPassword);
   }
 }
+
+module.exports = UserModel;

@@ -2,15 +2,17 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserModel, User } from '../models/User';
 
-const generateToken = (user: User) => {
+const generateToken = (user) => {
   return jwt.sign(
-    { id: user.id, email: user.email },
-    process.env.JWT_SECRET as string,
-    { expiresIn: '24h' }
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
   );
 };
 
-export const register = async (req: Request, res: Response): Promise<void> => {
+
+const register = async (req, res) => {
+
   try {
     const { email, password, name } = req.body;
 
@@ -44,7 +46,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const login = async (req: Request, res: Response): Promise<void> => {
+const login = async (req, res) => {
+
   try {
     const { email, password } = req.body;
 

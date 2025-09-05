@@ -1,171 +1,123 @@
-import React, { useState } from 'react';
-import './Banner.css';
+import { useState } from "react";
+import api from "../../service/api";  // ⚠️ ton dossier est "services" pas "service"
+import "./Banner.css";
 
 interface BannerProps {
-    onLogin: (username: string, semester: string) => void;
+  onLogin: (username: string) => void;
 }
 
-const Banner: React.FC<BannerProps> = ({ onLogin }) => {
-    const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
-    const [loginData, setLoginData] = useState({
-        username: '',
-        password: '',
-        semester: '',
-        rememberMe: false
-    });
-    const [signupData, setSignupData] = useState({
-        fullName: '',
-        email: '',
-        newPassword: '',
-        confirmPassword: '',
-        semester: '',
-        agreeToTerms: false
-    });
+function Banner({ onLogin }: BannerProps) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [isRegister, setIsRegister] = useState(false);
+  const [error, setError] = useState("");
 
-    const handleLoginSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (loginData.username && loginData.password) {
-            onLogin(loginData.username, loginData.semester);
-        }
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      let data;
+      if (isRegister) {
+        data = await api.register(email, password, name);
+      } else {
+        data = await api.login(email, password);
+      }
 
-    const handleSignupSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (signupData.fullName && signupData.email && signupData.newPassword) {
-            onLogin(signupData.fullName, signupData.semester);
-        }
-    };
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        onLogin(data.user.name);
+      } else {
+        setError(data.message || "Erreur");
+      }
+    } catch {
+      setError("Erreur serveur");
+    }
+  };
 
-    const handleLoginChange = (field: keyof typeof loginData, value: string | boolean) => {
-        setLoginData(prev => ({ ...prev, [field]: value }));
-    };
-
-    const handleSignupChange = (field: keyof typeof signupData, value: string | boolean) => {
-        setSignupData(prev => ({ ...prev, [field]: value }));
-    };
-
-    return (
-        <div className="banner-container">
-            <div className="banner-wrapper">
-                <div className={`banner ${activeTab === 'signup' ? 'signup-active' : ''}`}>
-                    <div className="login-section">
-                        <div className="section-content">
-                            <h2>Connexion</h2>
-                            <form onSubmit={handleLoginSubmit}>
-                                <div className="input-group">
-                                    <input
-                                        type="text"
-                                        value={loginData.username}
-                                        onChange={(e) => handleLoginChange('username', e.target.value)}
-                                        placeholder="Nom d'utilisateur"
-                                        required
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <input
-                                        type="password"
-                                        value={loginData.password}
-                                        onChange={(e) => handleLoginChange('password', e.target.value)}
-                                        placeholder="Mot de passe"
-                                        required
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <input
-                                        type="text"
-                                        value={loginData.semester}
-                                        onChange={(e) => handleLoginChange('semester', e.target.value)}
-                                        placeholder="Semestre №"
-                                    />
-                                </div>
-                                <div className="remember">
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={loginData.rememberMe}
-                                            onChange={(e) => handleLoginChange('rememberMe', e.target.checked)}
-                                        />
-                                        Se souvenir de moi
-                                    </label>
-                                </div>
-                                <button type="submit" className="submit-btn">Se connecter</button>
-                            </form>
-                            <p className="switch-text">
-                                Pas de compte? <span onClick={() => setActiveTab('signup')}>S'inscrire</span>
-                            </p>
-                        </div>
-                    </div>
-                    <div className="signup-section">
-                        <div className="section-content">
-                            <h2>Inscription</h2>
-                            <form onSubmit={handleSignupSubmit}>
-                                <div className="input-group">
-                                    <input
-                                        type="text"
-                                        value={signupData.fullName}
-                                        onChange={(e) => handleSignupChange('fullName', e.target.value)}
-                                        placeholder="Nom complet"
-                                        required
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <input
-                                        type="email"
-                                        value={signupData.email}
-                                        onChange={(e) => handleSignupChange('email', e.target.value)}
-                                        placeholder="Adresse email"
-                                        required
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <input
-                                        type="password"
-                                        value={signupData.newPassword}
-                                        onChange={(e) => handleSignupChange('newPassword', e.target.value)}
-                                        placeholder="Nouveau mot de passe"
-                                        required
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <input
-                                        type="password"
-                                        value={signupData.confirmPassword}
-                                        onChange={(e) => handleSignupChange('confirmPassword', e.target.value)}
-                                        placeholder="Confirmer le mot de passe"
-                                        required
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <input
-                                        type="text"
-                                        value={signupData.semester}
-                                        onChange={(e) => handleSignupChange('semester', e.target.value)}
-                                        placeholder="Semestre №"
-                                    />
-                                </div>
-                                <div className="remember">
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={signupData.agreeToTerms}
-                                            onChange={(e) => handleSignupChange('agreeToTerms', e.target.checked)}
-                                            required
-                                        />
-                                        J'accepte les conditions d'utilisation
-                                    </label>
-                                </div>
-                                <button type="submit" className="submit-btn">S'inscrire</button>
-                            </form>
-                            <p className="switch-text">
-                                Déjà un compte? <span onClick={() => setActiveTab('login')}>Se connecter</span>
-                            </p>
-                        </div>
-                    </div>
-                    <div className="oblique-divider"></div>
-                </div>
-            </div>
+  return (
+    <div className="banner-container">
+      <div className={`banner ${isRegister ? "signup-active" : ""}`}>
+        
+        {/* Section login */}
+        <div className="login-section">
+          <div className="section-content">
+            <h2>Se connecter</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="input-group">
+                <input
+                  type="email"
+                  placeholder="Adresse email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <input
+                  type="password"
+                  placeholder="Mot de passe"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <button type="submit" className="submit-btn">Se connecter</button>
+            </form>
+            {error && <p className="error">{error}</p>}
+            <p className="switch-text">
+              Pas encore de compte ?{" "}
+              <span onClick={() => setIsRegister(true)}>Inscrivez-vous</span>
+            </p>
+          </div>
         </div>
-    );
-};
+
+        {/* Section inscription */}
+        <div className="signup-section">
+          <div className="section-content">
+            <h2>Créer un compte</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="input-group">
+                <input
+                  type="text"
+                  placeholder="Nom"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <input
+                  type="email"
+                  placeholder="Adresse email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <input
+                  type="password"
+                  placeholder="Mot de passe"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <button type="submit" className="submit-btn">S'inscrire</button>
+            </form>
+            {error && <p className="error">{error}</p>}
+            <p className="switch-text">
+              Déjà un compte ?{" "}
+              <span onClick={() => setIsRegister(false)}>Connectez-vous</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Séparateur oblique */}
+        <div className="oblique-divider"></div>
+      </div>
+    </div>
+  );
+}
 
 export default Banner;

@@ -1,64 +1,92 @@
 import { useState } from "react";
-import Banner from './components/Banner/Banner';
-import ExpenseTracker from './components/ExpenseTracker/ExpenseTracker';
-import Navbar from './components/Navbar/Navbar';
-import './App.css';
+import Banner from "./components/Banner/Banner";
+import ExpenseTracker from "./components/ExpenseTracker/ExpenseTracker";
+import Budget from "./components/budget/budget";
+import RapportFinanciers from "./components/Financies/RapportFinanciers";
 
 function App() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [user, setUser] = useState({ username: '', semester: '' });
-    const [activeView, setActiveView] = useState('expense');
+  const [username, setUsername] = useState<string | null>(
+    localStorage.getItem("username")
+  );
+  const [activeView, setActiveView] = useState("transactions");
 
-    const handleLogin = (username: string, semester: string) => {
-        setIsLoggedIn(true);
-        setUser({ username, semester });
-    };
+  const handleLogin = (name: string) => {
+    setUsername(name);
+    localStorage.setItem("username", name);
+  };
 
-    const handleLogout = () => {
-        setIsLoggedIn(false);
-        setUser({ username: '', semester: '' });
-    };
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    setUsername(null);
+  };
 
-    const renderActiveView = () => {
-        switch (activeView) {
-            case 'expense':
-                return <ExpenseTracker />;
-            case 'budget':
-                return <div className="view-content"><h2>Gestion du Budget</h2><p>Fonctionnalité à venir...</p></div>;
-            case 'reports':
-                return <div className="view-content"><h2>Rapports Financiers</h2><p>Fonctionnalité à venir...</p></div>;
-            case 'settings':
-                return <div className="view-content"><h2>Paramètres</h2><p>Fonctionnalité à venir...</p></div>;
-            default:
-                return <ExpenseTracker />;
-        }
-    };
+  const renderView = () => {
+    switch (activeView) {
+      case "transactions":
+        return <ExpenseTracker />;
+      case "budget":
+        return <Budget />;
+      case "rapport":
+        return <RapportFinanciers />;
+      default:
+        return <ExpenseTracker />;
+    }
+  };
 
-    return (
-        <div className="App">
-            {!isLoggedIn ? (
-                <Banner onLogin={handleLogin} />
-            ) : (
-                <div className="app-container">
-                    <Navbar activeView={activeView} onViewChange={setActiveView} />
+  return (
+    <div className="App">
+      {!username ? (
+        <Banner onLogin={handleLogin} />
+      ) : (
+        <>
+          <header className="p-4 bg-blue-600 text-white flex justify-between items-center">
+            <h1 className="text-xl font-bold">Gestion des Finances</h1>
+            <div className="flex items-center gap-4">
+              <span>Bienvenue, {username} 👋</span>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+              >
+                Déconnexion
+              </button>
+            </div>
+          </header>
 
-                    <main className="main-content">
-                        <header className="app-header">
-                            <div className="user-info">
-                                <h2>Bienvenue, {user.username}!</h2>
-                                <p>Semestre: {user.semester}</p>
-                            </div>
-                            <button onClick={handleLogout} className="logout-btn">
-                                Déconnexion
-                            </button>
-                        </header>
+          <nav className="flex justify-center gap-4 p-4 bg-gray-200">
+            <button
+              onClick={() => setActiveView("transactions")}
+              className={`px-4 py-2 rounded ${
+                activeView === "transactions"
+                  ? "bg-blue-500 text-white"
+                  : "bg-white"
+              }`}
+            >
+              Transactions
+            </button>
+            <button
+              onClick={() => setActiveView("budget")}
+              className={`px-4 py-2 rounded ${
+                activeView === "budget" ? "bg-blue-500 text-white" : "bg-white"
+              }`}
+            >
+              Budget
+            </button>
+            <button
+              onClick={() => setActiveView("rapport")}
+              className={`px-4 py-2 rounded ${
+                activeView === "rapport" ? "bg-blue-500 text-white" : "bg-white"
+              }`}
+            >
+              Rapports
+            </button>
+          </nav>
 
-                        {renderActiveView()}
-                    </main>
-                </div>
-            )}
-        </div>
-    );
+          <main className="p-6">{renderView()}</main>
+        </>
+      )}
+    </div>
+  );
 }
 
 export default App;

@@ -17,5 +17,6 @@ const pool = new Pool({
 pool.on('error', (err) => {
   console.error('Erreur de pool PostgreSQL :', err);
 });
+console.log('DB_USER =', process.env.DB_USER);
 
 export default pool;

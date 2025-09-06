@@ -1,3 +1,4 @@
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -14,7 +15,7 @@ import savingsRoutes from './routes/savingsRoutes.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5432;
 
 
 app.use(cors()); // Autorise les requêtes cross-origin
@@ -38,9 +39,7 @@ const startServer = async () => {
     // Tester la connexion à la base de données
     await pool.query('SELECT NOW()');
     console.log(' Connexion à PostgreSQL réussie');
-    
-    // Initialiser la base de données
-    await initDatabase();
+
     
     // Démarrer le serveur
     app.listen(PORT, () => {

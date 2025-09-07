@@ -1,5 +1,5 @@
 // frontend/src/services/api.ts
-const API_URL = "http://localhost:5000/api"; // adapte si besoin
+const API_URL = "http://localhost:8080/api"; // adapte si besoin
 
 const getToken = () => localStorage.getItem("token");
 

@@ -3,6 +3,7 @@ import Banner from "./components/Banner/Banner";
 import ExpenseTracker from "./components/ExpenseTracker/ExpenseTracker";
 import Budget from "./components/budget/budget";
 import RapportFinanciers from "./components/Financies/RapportFinanciers";
+import './App.css'
 
 function App() {
   const [username, setUsername] = useState<string | null>(

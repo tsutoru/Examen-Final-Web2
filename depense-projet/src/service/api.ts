@@ -33,6 +33,13 @@ const api = {
     const res = await fetch(`${API_URL}/transactions`, { headers: headers() });
     return res.json();
   },
+  // === BUDGET ===
+  getBudget: async () => {
+    const res = await fetch(`${API_URL}/budget`, {
+      headers: headers(),
+    });
+    return res.json();
+  },
 
   getBalance: async () => {
     const res = await fetch(`${API_URL}/transactions/balance`, {

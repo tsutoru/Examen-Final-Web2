@@ -12,6 +12,12 @@ import accountRoutes from './routes/accountRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import savingsRoutes from './routes/savingsRoutes.js';
 
+// ... autres imports
+const categoryRoutes = require('./routes/categoryRoutes');
+const budgetRoutes = require('./routes/budgetRoutes');
+
+// ... après les autres routes
+
 dotenv.config();
 
 const app = express();
@@ -27,6 +33,8 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/savings', savingsRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/budget', budgetRoutes);
 
 // Route de santé pour tester l'API
 app.get('/api/health', (req, res) => {
@@ -50,5 +58,12 @@ const startServer = async () => {
     process.exit(1); // Quitter le processus en cas d'erreur
   }
 };
+// Après la connexion à la base de données
+await pool.query('SELECT NOW()');
+console.log(' Connexion à PostgreSQL réussie');
+
+// Créer les catégories par défaut
+const seedCategories = require('./database/seedCategories');
+await seedCategories();
 
 startServer();

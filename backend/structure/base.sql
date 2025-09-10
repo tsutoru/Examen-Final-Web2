@@ -77,3 +77,15 @@ EXECUTE FUNCTION create_user_account();
 
 -- Réinitialiser la séquence à la valeur maximale actuelle + 1
 SELECT setval(pg_get_serial_sequence('users', 'id'), coalesce(max(id), 0) + 1, false) FROM users;
+
+-- Table des budgets
+CREATE TABLE IF NOT EXISTS budgets (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    category_id INTEGER REFERENCES categories(id) ON DELETE CASCADE,
+    amount DECIMAL(15, 2) NOT NULL,
+    month DATE NOT NULL, -- Le premier jour du mois (ex: 2023-10-01 pour octobre 2023)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, category_id, month)
+);

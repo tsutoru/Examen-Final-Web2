@@ -33,13 +33,8 @@ const api = {
     const res = await fetch(`${API_URL}/transactions`, { headers: headers() });
     return res.json();
   },
-  // === BUDGET ===
-  getBudget: async () => {
-    const res = await fetch(`${API_URL}/budget`, {
-      headers: headers(),
-    });
-    return res.json();
-  },
+    // === BUDGET ===
+  // Removed duplicate getBudget function
 
   getBalance: async () => {
     const res = await fetch(`${API_URL}/transactions/balance`, {
@@ -90,19 +85,7 @@ const api = {
   },
 
   // === CATEGORIES ===
-  getCategories: async () => {
-    const res = await fetch(`${API_URL}/categories`, { headers: headers() });
-    return res.json();
-  },
-
-  createCategory: async (data: any) => {
-    const res = await fetch(`${API_URL}/categories`, {
-      method: "POST",
-      headers: headers(),
-      body: JSON.stringify(data),
-    });
-    return res.json();
-  },
+  // (removed duplicate getCategories and createCategory)
 
   // === SAVINGS ===
   getSavings: async () => {
@@ -118,6 +101,57 @@ const api = {
     });
     return res.json();
   },
+  // === CATEGORIES ===
+  getCategories: async (): Promise<{ categories: any[] }> => {
+    const res = await fetch(`${API_URL}/categories`, { headers: headers() });
+    return res.json();
+  },
+
+  createCategory: async (data: any): Promise<any> => {
+    const res = await fetch(`${API_URL}/categories`, {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  // === BUDGET ===
+  getBudget: async (month: string): Promise<any> => {
+    const res = await fetch(`${API_URL}/budget?month=${month}`, { headers: headers() });
+    return res.json();
+  },
+
+  createBudget: async (data: any): Promise<any> => {
+    const res = await fetch(`${API_URL}/budget`, {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  updateBudget: async (id: number, data: any): Promise<any> => {
+    const res = await fetch(`${API_URL}/budget/${id}`, {
+      method: "PUT",
+      headers: headers(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  deleteBudget: async (id: number): Promise<any> => {
+    const res = await fetch(`${API_URL}/budget/${id}`, {
+      method: "DELETE",
+      headers: headers(),
+    });
+    return res.json();
+  },
 };
+
+
+
+
+
 
 export default api;

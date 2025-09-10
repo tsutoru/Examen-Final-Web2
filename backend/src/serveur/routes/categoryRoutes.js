@@ -1,21 +1,12 @@
-import express from "express";
-
+// routes/categoryRoutes.js
+const express = require('express');
 const router = express.Router();
+const { getCategories, createCategory } = require('../controllers/categoryControllers');
+const { authenticateToken } = require('../middleware/auth');
 
-// GET : récupérer toutes les catégories
-router.get("/", (req, res) => {
-  res.json([
-    { id: 1, name: "Alimentation" },
-    { id: 2, name: "Transport" },
-    { id: 3, name: "Loisirs" }
-  ]);
-});
+router.use(authenticateToken);
 
-// POST : ajouter une catégorie
-router.post("/", (req, res) => {
-  const { name } = req.body;
-  // Ici, tu peux ajouter la logique pour stocker la catégorie
-  res.status(201).json({ message: "Catégorie ajoutée", category: { id: Date.now(), name } });
-});
+router.get('/', getCategories);
+router.post('/', createCategory);
 
-export default router;
+module.exports = router;

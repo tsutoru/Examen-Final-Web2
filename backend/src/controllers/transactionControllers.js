@@ -108,3 +108,7 @@ export const getBalance = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur' });
   }
 };
+// ... dans createTransaction, ajoutez une validation pour category_id
+if (type === 'depense' && !category_id) {
+  return res.status(400).json({ message: 'Catégorie requise pour les dépenses' });
+}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../service/api";
+import "./ExpenseTracker.css"; // Import du fichier CSS
 
 function ExpenseTracker() {
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -35,39 +36,73 @@ function ExpenseTracker() {
     loadTransactions();
   }, []);
 
+  // Calcul du solde total
+  const totalAmount = transactions.reduce((total, transaction) => {
+    return transaction.type === "revenu" 
+      ? total + transaction.amount 
+      : total - transaction.amount;
+  }, 0);
+
   return (
-    <div>
-      <h2>Mes Transactions</h2>
-      <div>
-        <input
-          type="number"
-          placeholder="Montant"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-        <select value={type} onChange={(e) => setType(e.target.value)}>
-          <option value="depense">Dépense</option>
-          <option value="revenu">Revenu</option>
-        </select>
-        <input
-          type="text"
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <button onClick={addTransaction}>Ajouter</button>
+    <div className="expense-tracker">
+      <div className="expense-header">
+        <h2>Mes Transactions</h2>
       </div>
 
-      <ul>
+      <div className="expense-content">
+        <div className="expense-form">
+          <h3>Nouvelle Transaction</h3>
+          <div className="form-group">
+            <input
+              type="number"
+              placeholder="Montant"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <select value={type} onChange={(e) => setType(e.target.value)}>
+              <option value="depense">Dépense</option>
+              <option value="revenu">Revenu</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <input
+              type="text"
+              placeholder="Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          <button className="add-btn" onClick={addTransaction}>Ajouter</button>
+        </div>
+      </div>
+
+      <div className="expense-list">
+        <h3>Historique des Transactions</h3>
         {transactions.map((t) => (
-          <li key={t.id}>
-            {t.date} - {t.type} - {t.amount} ({t.description})
-            <button onClick={() => deleteTransaction(t.id)}>Supprimer</button>
-          </li>
+          <div key={t.id} className="expense-item">
+            <div className="expense-info">
+              <div className="expense-title">{t.description || "Sans description"}</div>
+              <div className="expense-category">{t.type}</div>
+              <div className="expense-date">
+                {new Date(t.date).toLocaleDateString()}
+              </div>
+            </div>
+            <div className="expense-amount">
+              {t.type === "depense" ? "-" : "+"}
+              {t.amount} €
+              <button 
+                className="delete-btn"
+                onClick={() => deleteTransaction(t.id)}
+              >
+                ×
+              </button>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
-
 export default ExpenseTracker;

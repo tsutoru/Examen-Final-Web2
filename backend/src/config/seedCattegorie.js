@@ -27,14 +27,14 @@ export async function seedCategories() {
       for (const category of defaultCategories) {
         // Vérifier si la catégorie existe déjà
         const existing = await pool.query(
-            'SELECT id FROM categories WHERE user_id = $1 AND name = $2 AND type = $3',
+            'SELECT id FROM categories WHERE user_id = $1 AND name_categorie = $2 AND type = $3',
             [user.id, category.name, category.type]
         );
 
         if (existing.rows.length === 0) {
           // Insérer la catégorie
           await pool.query(
-              'INSERT INTO categories (user_id, name, type, color, icon) VALUES ($1, $2, $3, $4, $5)',
+              'INSERT INTO categories (user_id, name_categorie, type, color, icon) VALUES ($1, $2, $3, $4, $5)',
               [user.id, category.name, category.type, category.color, category.icon]
           );
         }

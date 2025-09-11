@@ -15,6 +15,7 @@ export const getCategories = async (req, res) => {
 
 // Créer une nouvelle catégorie
 export const createCategory = async (req, res) => {
+  console.log('➡️ Données reçues :', req.body); // 🔍 Ajout du log
   try {
     const userId = req.user.id;
     const { name, type, color, icon } = req.body;

@@ -1,12 +1,11 @@
-// controllers/budgetControllers.js
-const BudgetModel = require('../models/budget');
+import BudgetModel from '../models/budget.js';
 
 // Récupérer tous les budgets de l'utilisateur pour un mois donné
-exports.getBudgets = async (req, res) => {
+export const getBudgets = async (req, res) => {
   try {
     const userId = req.user.id;
     const { month } = req.query; // Format: YYYY-MM-DD (le premier du mois)
-    
+
     if (!month) {
       return res.status(400).json({ message: 'Paramètre month requis' });
     }
@@ -20,7 +19,7 @@ exports.getBudgets = async (req, res) => {
 };
 
 // Créer un nouveau budget
-exports.createBudget = async (req, res) => {
+export const createBudget = async (req, res) => {
   try {
     const userId = req.user.id;
     const { category_id, amount, month } = req.body;
@@ -44,7 +43,7 @@ exports.createBudget = async (req, res) => {
 };
 
 // Mettre à jour un budget
-exports.updateBudget = async (req, res) => {
+export const updateBudget = async (req, res) => {
   try {
     const userId = req.user.id;
     const budgetId = parseInt(req.params.id);
@@ -63,7 +62,7 @@ exports.updateBudget = async (req, res) => {
 };
 
 // Supprimer un budget
-exports.deleteBudget = async (req, res) => {
+export const deleteBudget = async (req, res) => {
   try {
     const userId = req.user.id;
     const budgetId = parseInt(req.params.id);

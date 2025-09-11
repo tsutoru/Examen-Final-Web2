@@ -1,8 +1,15 @@
 // models/Transaction.js
-const pool = require('../config/database');
+import pool from '../config/database.js';
 
 class TransactionModel {
-  // ... autres méthodes existantes ...
+  // Récupérer toutes les transactions d’un utilisateur
+  static async findByUserId(userId) {
+    const result = await pool.query(
+        `SELECT * FROM transactions WHERE user_id = $1 ORDER BY date DESC`,
+        [userId]
+    );
+    return result.rows;
+  }
 
   // Créer une transaction avec mise à jour du compte
   static async create(transaction) {
@@ -12,28 +19,28 @@ class TransactionModel {
 
       // Insérer la transaction
       const transactionResult = await client.query(
-        `INSERT INTO transactions (user_id, account_id, category_id, amount, type, description, date) 
+          `INSERT INTO transactions (user_id, account_id, category_id, amount, type, description, date) 
          VALUES ($1, $2, $3, $4, $5, $6, $7) 
          RETURNING *`,
-        [
-          transaction.user_id,
-          transaction.account_id,
-          transaction.category_id,
-          transaction.amount,
-          transaction.type,
-          transaction.description,
-          transaction.date
-        ]
+          [
+            transaction.user_id,
+            transaction.account_id,
+            transaction.category_id,
+            transaction.amount,
+            transaction.type,
+            transaction.description,
+            transaction.date
+          ]
       );
 
       // Mettre à jour le solde du compte
-      const balanceChange = transaction.type === 'revenu' 
-        ? transaction.amount 
-        : -transaction.amount;
+      const balanceChange = transaction.type === 'revenu'
+          ? transaction.amount
+          : -transaction.amount;
 
       await client.query(
-        'UPDATE accounts SET balance = balance + $1, updated_at = NOW() WHERE id = $2',
-        [balanceChange, transaction.account_id]
+          'UPDATE accounts SET balance = balance + $1, updated_at = NOW() WHERE id = $2',
+          [balanceChange, transaction.account_id]
       );
 
       await client.query('COMMIT');
@@ -54,8 +61,8 @@ class TransactionModel {
 
       // Récupérer la transaction
       const transactionResult = await client.query(
-        'SELECT * FROM transactions WHERE id = $1 AND user_id = $2',
-        [id, userId]
+          'SELECT * FROM transactions WHERE id = $1 AND user_id = $2',
+          [id, userId]
       );
 
       if (transactionResult.rows.length === 0) {
@@ -66,18 +73,18 @@ class TransactionModel {
 
       // Supprimer la transaction
       await client.query(
-        'DELETE FROM transactions WHERE id = $1 AND user_id = $2',
-        [id, userId]
+          'DELETE FROM transactions WHERE id = $1 AND user_id = $2',
+          [id, userId]
       );
 
       // Inverser l'effet sur le compte
-      const balanceChange = transaction.type === 'revenu' 
-        ? -transaction.amount 
-        : transaction.amount;
+      const balanceChange = transaction.type === 'revenu'
+          ? -transaction.amount
+          : transaction.amount;
 
       await client.query(
-        'UPDATE accounts SET balance = balance + $1, updated_at = NOW() WHERE id = $2',
-        [balanceChange, transaction.account_id]
+          'UPDATE accounts SET balance = balance + $1, updated_at = NOW() WHERE id = $2',
+          [balanceChange, transaction.account_id]
       );
 
       await client.query('COMMIT');
@@ -91,4 +98,4 @@ class TransactionModel {
   }
 }
 
-module.exports = TransactionModel;
+export default TransactionModel;

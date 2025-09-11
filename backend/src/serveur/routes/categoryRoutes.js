@@ -1,12 +1,12 @@
-// routes/categoryRoutes.js
-const express = require('express');
+import express from 'express';
+import { getCategories, createCategory } from '../../controllers/categoryController.js';
+import { authenticateToken } from '../../middleware/auth.js';
+
 const router = express.Router();
-const { getCategories, createCategory } = require('../controllers/categoryControllers');
-const { authenticateToken } = require('../middleware/auth');
 
 router.use(authenticateToken);
 
 router.get('/', getCategories);
 router.post('/', createCategory);
 
-module.exports = router;
+export default router;

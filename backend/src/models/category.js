@@ -1,5 +1,5 @@
 // models/Category.js
-const pool = require('../config/database');
+import pool from '../config/database.js';
 
 class CategoryModel {
   // Récupérer toutes les catégories d'un utilisateur
@@ -24,4 +24,4 @@ class CategoryModel {
   }
 }
 
-module.exports = CategoryModel;
+export default CategoryModel;

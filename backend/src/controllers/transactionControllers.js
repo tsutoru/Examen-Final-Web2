@@ -1,7 +1,9 @@
-import { TransactionModel } from '../models/Transaction.js';
+import  TransactionModel  from '../models/Transaction.js';
 
 export const getTransactions = async (req, res) => {
   try {
+    console.log('TransactionModel:', TransactionModel);
+    console.log('Méthodes disponibles:', Object.getOwnPropertyNames(TransactionModel));
     const userId = req.user.id;
     const transactions = await TransactionModel.findByUserId(userId);
     res.json({ transactions });
@@ -15,11 +17,22 @@ export const createTransaction = async (req, res) => {
   try {
     const userId = req.user.id;
     const { account_id, category_id, amount, type, description, date } = req.body;
-
+    console.log("Transaction reçue :", {
+      account_id,
+      category_id,
+      amount,
+      type,
+      description,
+      date,
+    });
     if (!account_id || !amount || !type || !date) {
       res.status(400).json({ message: 'Champs requis manquants' });
       return;
     }
+
+    /*if (type === 'depense' && !name_categorie) {
+      return res.status(400).json({ message: 'Catégorie requise pour les dépenses' });
+    }*/
 
     if (type !== 'depense' && type !== 'revenu') {
       res.status(400).json({ message: 'Le type doit être "depense" ou "revenu"' });
@@ -108,7 +121,3 @@ export const getBalance = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur' });
   }
 };
-// ... dans createTransaction, ajoutez une validation pour category_id
-if (type === 'depense' && !category_id) {
-  return res.status(400).json({ message: 'Catégorie requise pour les dépenses' });
-}

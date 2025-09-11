@@ -1,8 +1,9 @@
 // routes/budgetRoutes.js
-const express = require('express');
+import express from 'express';
+import { getBudgets, createBudget, updateBudget, deleteBudget } from '../../controllers/budgetController.js';
+import { authenticateToken } from '../../middleware/auth.js';
+
 const router = express.Router();
-const { getBudgets, createBudget, updateBudget, deleteBudget } = require('../controllers/budgetControllers');
-const { authenticateToken } = require('../middleware/auth');
 
 router.use(authenticateToken);
 
@@ -11,4 +12,4 @@ router.post('/', createBudget);
 router.put('/:id', updateBudget);
 router.delete('/:id', deleteBudget);
 
-module.exports = router;
+export default router;

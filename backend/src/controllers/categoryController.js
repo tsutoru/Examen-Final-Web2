@@ -1,8 +1,8 @@
 // controllers/categoryControllers.js
-const CategoryModel = require('../models/category');
+import CategoryModel from '../models/category.js';
 
 // Récupérer toutes les catégories de l'utilisateur
-exports.getCategories = async (req, res) => {
+export const getCategories = async (req, res) => {
   try {
     const userId = req.user.id;
     const categories = await CategoryModel.findByUserId(userId);
@@ -14,7 +14,7 @@ exports.getCategories = async (req, res) => {
 };
 
 // Créer une nouvelle catégorie
-exports.createCategory = async (req, res) => {
+export const createCategory = async (req, res) => {
   try {
     const userId = req.user.id;
     const { name, type, color, icon } = req.body;
@@ -25,7 +25,7 @@ exports.createCategory = async (req, res) => {
 
     const category = await CategoryModel.create({
       user_id: userId,
-      name,
+      name_categorie: name,
       type,
       color: color || '#000000',
       icon: icon || 'help-circle'

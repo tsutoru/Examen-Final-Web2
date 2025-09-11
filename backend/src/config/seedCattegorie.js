@@ -1,12 +1,12 @@
 // database/seedCategories.js
-const pool = require('../config/database');
+import pool from '../config/database.js';
 
 const defaultCategories = [
   // Revenus
   { name: 'Salaire', type: 'revenu', color: '#4CAF50', icon: 'cash' },
   { name: 'Prime', type: 'revenu', color: '#8BC34A', icon: 'gift' },
   { name: 'Investissement', type: 'revenu', color: '#CDDC39', icon: 'trending-up' },
-  
+
   // Dépenses
   { name: 'Nourriture', type: 'depense', color: '#FF5722', icon: 'food' },
   { name: 'Logement', type: 'depense', color: '#795548', icon: 'home' },
@@ -18,38 +18,36 @@ const defaultCategories = [
   { name: 'Autre', type: 'depense', color: '#9E9E9E', icon: 'help-circle' }
 ];
 
-async function seedCategories() {
+export async function seedCategories() {
   try {
     // Récupérer tous les utilisateurs
     const users = await pool.query('SELECT id FROM users');
-    
+
     for (const user of users.rows) {
       for (const category of defaultCategories) {
         // Vérifier si la catégorie existe déjà
         const existing = await pool.query(
-          'SELECT id FROM categories WHERE user_id = $1 AND name = $2 AND type = $3',
-          [user.id, category.name, category.type]
+            'SELECT id FROM categories WHERE user_id = $1 AND name = $2 AND type = $3',
+            [user.id, category.name, category.type]
         );
-        
+
         if (existing.rows.length === 0) {
           // Insérer la catégorie
           await pool.query(
-            'INSERT INTO categories (user_id, name, type, color, icon) VALUES ($1, $2, $3, $4, $5)',
-            [user.id, category.name, category.type, category.color, category.icon]
+              'INSERT INTO categories (user_id, name, type, color, icon) VALUES ($1, $2, $3, $4, $5)',
+              [user.id, category.name, category.type, category.color, category.icon]
           );
         }
       }
     }
-    
+
     console.log('Catégories par défaut créées avec succès');
   } catch (error) {
     console.error('Erreur lors de la création des catégories par défaut:', error);
   }
 }
 
-// Exécuter le script si appelé directement
-if (require.main === module) {
+// Si tu veux exécuter ce script directement avec Node (optionnel)
+if (process.argv[1].endsWith('seedCategories.js')) {
   seedCategories().then(() => process.exit());
 }
-
-module.exports = seedCategories;

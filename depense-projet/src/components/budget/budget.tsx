@@ -63,10 +63,13 @@ function Budget() {
     let totalExpenses = 0;
     
     transactions.forEach(transaction => {
+      // S'assurer que le montant est un nombre
+      const amount = parseFloat(transaction.amount) || 0;
+      
       if (transaction.type === "revenu") {
-        totalIncome += transaction.amount;
+        totalIncome += amount;
       } else if (transaction.type === "depense") {
-        totalExpenses += transaction.amount;
+        totalExpenses += amount;
       }
     });
     
@@ -74,38 +77,69 @@ function Budget() {
     setBudget(calculatedBudget);
   };
 
-  // Préparer les données pour le graphique circulaire (revenus + dépenses)
-  const prepareDoughnutChartData = () => {
-    // Regrouper par type (revenu/dépense) et par catégorie
-    const dataByTypeAndCategory: {[key: string]: number} = {};
+  // Fonction pour extraire la catégorie d'une transaction à partir de sa description
+  const extractCategoryFromDescription = (description: string) => {
+    if (!description) return "Non catégorisé";
+    const categoryMatch = description.match(/\[Catégorie: ([^,]+)/);
+    return categoryMatch ? categoryMatch[1] : "Non catégorisé";
+  };
+
+  // Fonction pour extraire toutes les catégories uniques des transactions
+  const getAllCategories = () => {
+    const categoriesSet = new Set<string>();
     
     transactions.forEach(transaction => {
-      const category = categories.find((c) => c.id === transaction.category_id);
-      const categoryName = category ? category.name : "Non catégorisé";
-      const key = `${transaction.type}-${categoryName}`;
-      
-      dataByTypeAndCategory[key] = (dataByTypeAndCategory[key] || 0) + transaction.amount;
+      if (transaction.type === "depense") {
+        const category = extractCategoryFromDescription(transaction.description);
+        categoriesSet.add(category);
+      }
     });
     
-    // Séparer les labels et les données
-    const labels = Object.keys(dataByTypeAndCategory).map(key => {
-      const [type, category] = key.split('-');
-      return `${category} (${type === 'revenu' ? 'Revenu' : 'Dépense'})`;
+    return Array.from(categoriesSet);
+  };
+
+  // Préparer les données pour le graphique circulaire (revenus + catégories de dépenses)
+  const prepareDoughnutChartData = () => {
+    const allCategories = getAllCategories();
+    
+    // Calculer le montant total des revenus
+    const incomeAmount = transactions
+      .filter(t => t.type === "revenu")
+      .reduce((sum, t) => {
+        const amount = parseFloat(t.amount) || 0;
+        return sum + amount;
+      }, 0);
+    
+    // Calculer le montant pour chaque catégorie de dépense
+    const expensesByCategory: {[key: string]: number} = {};
+    
+    transactions.forEach(transaction => {
+      if (transaction.type === "depense") {
+        const categoryName = extractCategoryFromDescription(transaction.description);
+        const amount = parseFloat(transaction.amount) || 0;
+        expensesByCategory[categoryName] = (expensesByCategory[categoryName] || 0) + amount;
+      }
     });
     
-    const data = Object.values(dataByTypeAndCategory);
+    // Préparer les labels et données
+    const labels = ["Revenus", ...allCategories];
+    const data = [incomeAmount, ...allCategories.map(cat => expensesByCategory[cat] || 0)];
     
-    // Couleurs différentes pour revenus et dépenses
-    const backgroundColors = Object.keys(dataByTypeAndCategory).map(key => {
-      return key.startsWith('revenu-') ? '#4CAF50' : '#F44336';
-    });
+    // Couleurs - vert pour les revenus, différentes couleurs pour chaque catégorie de dépense
+    const backgroundColors = [
+      '#4CAF50', // Vert pour les revenus
+      '#F44336', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5',
+      '#2196F3', '#03A9F4', '#00BCD4', '#009688', '#8BC34A',
+      '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722',
+      '#795548', '#9E9E9E', '#607D8B'
+    ];
     
     return {
       labels,
       datasets: [
         {
           data,
-          backgroundColor: backgroundColors,
+          backgroundColor: backgroundColors.slice(0, labels.length),
           borderWidth: 1,
         },
       ],
@@ -122,15 +156,16 @@ function Budget() {
     transactions.forEach(transaction => {
       const date = new Date(transaction.date);
       const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
+      const amount = parseFloat(transaction.amount) || 0;
       
       if (!monthlyData[monthYear]) {
         monthlyData[monthYear] = { income: 0, expense: 0 };
       }
       
       if (transaction.type === "revenu") {
-        monthlyData[monthYear].income += transaction.amount;
+        monthlyData[monthYear].income += amount;
       } else {
-        monthlyData[monthYear].expense += transaction.amount;
+        monthlyData[monthYear].expense += amount;
       }
     });
     
@@ -192,11 +227,17 @@ function Budget() {
   // Calculer les totaux pour l'affichage
   const totalIncome = transactions
     .filter(t => t.type === "revenu")
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => {
+      const amount = parseFloat(t.amount) || 0;
+      return sum + amount;
+    }, 0);
     
   const totalExpenses = transactions
     .filter(t => t.type === "depense")
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => {
+      const amount = parseFloat(t.amount) || 0;
+      return sum + amount;
+    }, 0);
 
   return (
     <div className={`budget-container ${darkMode ? "budget-dark" : ""}`}>
@@ -270,7 +311,7 @@ function Budget() {
         <section className="budget-chart-section">
           <div className="budget-chart-container">
             <div className="budget-chart-header">
-              <h3 className="budget-chart-title">Répartition des revenus et dépenses</h3>
+              <h3 className="budget-chart-title">Répartition des revenus et dépenses par catégories</h3>
               <button 
                 className="budget-export-btn"
                 onClick={() => exportChartAsPNG('doughnut-chart', 'repartition-budget')}
@@ -333,7 +374,12 @@ function Budget() {
               <p className="budget-no-data">Aucune transaction récente</p>
             ) : (
               transactions.slice(0, 5).map((transaction) => {
-                const category = categories.find(c => c.id === transaction.category_id);
+                const category = transaction.type === "depense" 
+                  ? extractCategoryFromDescription(transaction.description) 
+                  : "Revenu";
+                  
+                const amount = parseFloat(transaction.amount) || 0;
+                  
                 return (
                   <div key={transaction.id} className="budget-transaction">
                     <div className="budget-transaction-info">
@@ -346,10 +392,10 @@ function Budget() {
                       </div>
                       <div className="budget-transaction-details">
                         <span className="budget-transaction-name">
-                          {transaction.description || "Sans description"}
+                          {transaction.description ? transaction.description.split(' [')[0] : "Sans description"}
                         </span>
                         <span className="budget-transaction-meta">
-                          {category ? category.name : "Non catégorisé"} • {new Date(transaction.date).toLocaleDateString()}
+                          {category} • {new Date(transaction.date).toLocaleDateString()}
                         </span>
                       </div>
                     </div>
@@ -359,7 +405,7 @@ function Budget() {
                         : "budget-transaction-negative"
                     }`}>
                       {transaction.type === "revenu" ? "+ " : "- "}
-                      {formatAmount(transaction.amount)} Ar
+                      {formatAmount(amount)} Ar
                     </span>
                   </div>
                 );
@@ -375,27 +421,33 @@ function Budget() {
             {savingsGoals.length === 0 ? (
               <p className="budget-no-data">Aucun objectif d'épargne défini</p>
             ) : (
-              savingsGoals.map((goal: any) => (
-                <div key={goal.id} className="budget-goal">
-                  <div className="budget-goal-info">
-                    <span className="budget-goal-name">{goal.name}</span>
-                    <span className="budget-goal-target">
-                      Objectif: {formatAmount(goal.target_amount)} Ar
-                    </span>
-                  </div>
-                  <div className="budget-goal-progress">
-                    <div className="budget-goal-progress-bar">
-                      <div
-                        className="budget-goal-progress-fill"
-                        style={{ width: `${(goal.current_amount / goal.target_amount) * 100}%` }}
-                      ></div>
+              savingsGoals.map((goal: any) => {
+                const currentAmount = parseFloat(goal.current_amount) || 0;
+                const targetAmount = parseFloat(goal.target_amount) || 0;
+                const progressPercentage = targetAmount > 0 ? (currentAmount / targetAmount) * 100 : 0;
+                
+                return (
+                  <div key={goal.id} className="budget-goal">
+                    <div className="budget-goal-info">
+                      <span className="budget-goal-name">{goal.name}</span>
+                      <span className="budget-goal-target">
+                        Objectif: {formatAmount(targetAmount)} Ar
+                      </span>
                     </div>
-                    <span className="budget-goal-amount">
-                      {formatAmount(goal.current_amount)} Ar économisés
-                    </span>
+                    <div className="budget-goal-progress">
+                      <div className="budget-goal-progress-bar">
+                        <div
+                          className="budget-goal-progress-fill"
+                          style={{ width: `${progressPercentage}%` }}
+                        ></div>
+                      </div>
+                      <span className="budget-goal-amount">
+                        {formatAmount(currentAmount)} Ar économisés
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </section>

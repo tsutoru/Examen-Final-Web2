@@ -238,3 +238,43 @@
     justify-content: center;
     transition: all 0.3s;
 }
+.category-header {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.delete-category-btn {
+  background: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.delete-category-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.add-category {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.add-category input {
+  flex: 1;
+}
+
+.add-category button {
+  background: #2ed573;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+}

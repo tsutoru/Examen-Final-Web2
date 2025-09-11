@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import api from "../../service/api";
-import "./ExpenseTracker.css"; // Import du fichier CSS
+import "./ExpenseTracker.css";
 
 function ExpenseTracker() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("depense");
   const [description, setDescription] = useState("");
+  // États pour les nouvelles fonctionnalités
+  const [categories, setCategories] = useState<string[]>(["Alimentation", "Transport", "Loisirs"]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [expenseType, setExpenseType] = useState<"ponctuelle" | "recurrente">("ponctuelle");
+  const [duration, setDuration] = useState("");
+  const [newCategory, setNewCategory] = useState("");
 
   const loadTransactions = async () => {
     const data = await api.getTransactions();
@@ -14,24 +20,30 @@ function ExpenseTracker() {
   };
 
   const addTransaction = async () => {
-    console.log({
+    if (!amount) return;
+
+    let finalDescription = description;
+    if (type === "depense") {
+      finalDescription = `${description} [Catégorie: ${selectedCategory}, Type: ${expenseType}`;
+      if (expenseType === "recurrente" && duration) {
+        finalDescription += `, Durée: ${duration} mois`;
+      }
+      finalDescription += "]";
+    }
+
+    await api.createTransaction({
       account_id: 1,
       amount: parseFloat(amount),
       type,
-      description,
+      description: finalDescription,
       date: new Date(),
     });
-
-    if (!amount) return;
-    await api.createTransaction({
-      account_id: 1, // à adapter
-      amount: parseFloat(amount),
-      type,
-      description,
-      date: new Date(),
-    });
+    
     setAmount("");
     setDescription("");
+    setSelectedCategory("");
+    setExpenseType("ponctuelle");
+    setDuration("");
     await loadTransactions();
   };
 
@@ -40,11 +52,33 @@ function ExpenseTracker() {
     await loadTransactions();
   };
 
+  const addCategory = () => {
+    if (newCategory && !categories.includes(newCategory)) {
+      setCategories([...categories, newCategory]);
+      setSelectedCategory(newCategory);
+      setNewCategory("");
+    }
+  };
+
+  const deleteCategory = (categoryToDelete: string) => {
+    if (categories.length > 1) {
+      setCategories(categories.filter(cat => cat !== categoryToDelete));
+      if (selectedCategory === categoryToDelete) {
+        setSelectedCategory(categories[0]);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (categories.length > 0 && !selectedCategory) {
+      setSelectedCategory(categories[0]);
+    }
+  }, [categories, selectedCategory]);
+
   useEffect(() => {
     loadTransactions();
   }, []);
 
-  // Calcul du solde total
   const totalAmount = transactions.reduce((total, transaction) => {
     return transaction.type === "revenu" 
       ? total + transaction.amount 
@@ -74,6 +108,61 @@ function ExpenseTracker() {
               <option value="revenu">Revenu</option>
             </select>
           </div>
+          
+          {type === "depense" && (
+            <>
+              <div className="form-group">
+                <div className="category-header">
+                  <select 
+                    value={selectedCategory} 
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                  >
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <button 
+                    className="delete-category-btn"
+                    onClick={() => deleteCategory(selectedCategory)}
+                    disabled={categories.length <= 1}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="add-category">
+                  <input
+                    type="text"
+                    placeholder="Nouvelle catégorie"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                  />
+                  <button onClick={addCategory}>+</button>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <select 
+                  value={expenseType} 
+                  onChange={(e) => setExpenseType(e.target.value as "ponctuelle" | "recurrente")}
+                >
+                  <option value="ponctuelle">Dépense ponctuelle</option>
+                  <option value="recurrente">Dépense prolongée</option>
+                </select>
+              </div>
+
+              {expenseType === "recurrente" && (
+                <div className="form-group">
+                  <input
+                    type="number"
+                    placeholder="Durée en mois (optionnel)"
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                  />
+                </div>
+              )}
+            </>
+          )}
+
           <div className="form-group">
             <input
               type="text"
@@ -113,4 +202,5 @@ function ExpenseTracker() {
     </div>
   );
 }
+
 export default ExpenseTracker;

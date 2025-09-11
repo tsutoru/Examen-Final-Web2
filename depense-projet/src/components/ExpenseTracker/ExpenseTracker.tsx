@@ -14,6 +14,14 @@ function ExpenseTracker() {
   };
 
   const addTransaction = async () => {
+    console.log({
+      account_id: 1,
+      amount: parseFloat(amount),
+      type,
+      description,
+      date: new Date(),
+    });
+
     if (!amount) return;
     await api.createTransaction({
       account_id: 1, // à adapter

@@ -108,6 +108,7 @@ const api = {
   },
 
   createCategory: async (data: any): Promise<any> => {
+    console.log("🚀 Données envoyées à l'API createCategory:", data);
     const res = await fetch(`${API_URL}/categories`, {
       method: "POST",
       headers: headers(),
